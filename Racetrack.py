@@ -11,8 +11,14 @@ def get_temporal_difference(reward, gamma, new_q_values, old_q_value):
 
 def main():
     env = gym.make('racetrack-v0', render_mode='rgb_array')
+    # Set action space to discrete
+    env.configure({
+    "action": {
+        "type": "DiscreteAction"
+    }
+})
     observation, info = env.reset()
-    
+    print(env.action_space)
     # define Qlearning hyperparams
     discount_factor = 0.9
     learning_rate = 0.7
