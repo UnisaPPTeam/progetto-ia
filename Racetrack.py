@@ -1,6 +1,8 @@
 import gymnasium as gym
 from gymnasium import Space
 import numpy as np
+import os
+from stable_baselines3 import DQN
 
 def pick_action(observation: np.ndarray, action_list: Space):
     return action_list.sample()
@@ -16,7 +18,9 @@ def main():
     # define Qlearning hyperparams
     discount_factor = 0.9
     learning_rate = 0.7
-    
+    # Init the model
+    log_path = os.path.join('Training', 'Logs')
+    model = DQN("CnnPolicy", env, verbose=1, tensorboard_log=log_path) 
     for _ in range(1000):
         # We need to preserve the old observation to be sure we can access the old q value
         old_observation = observation
