@@ -4,13 +4,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
+def get_Q_Table(quantized_observation, action_count):
+    qtable = np.zeros((2, FLOAT_QUANTIZATION, FLOAT_QUANTIZATION, FLOAT_QUANTIZATION, FLOAT_QUANTIZATION, ANGLE_QUANTIZATION, FLOAT_QUANTIZATION, 
+                                            FLOAT_QUANTIZATION, FLOAT_QUANTIZATION, ANGLE_QUANTIZATION, action_count))
+    return qtable
+    
 def epsilon_greedy_policy(env, Q, state, epsilon):
     if np.random.rand() < epsilon:
         return np.random.randint(env.action_space.n)
     else:
         return np.argmax(Q[state, :])
-
 
 class DQN(nn.Module):
 
