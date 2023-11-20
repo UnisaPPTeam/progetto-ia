@@ -1,55 +1,103 @@
+import itertools
 import gymnasium as gym
 from gymnasium import Space
 import numpy as np
+from estimator import Estimator
 
-def pick_action(observation: np.ndarray, action_list: Space):
-    return action_list.sample()
+_config = { "action": {
+                            "type": "DiscreteAction",
+                            "longitudinal": True,
+                            "lateral": True,
+                            "actions_per_axis": 11,
+                                    },
+                        }
+
+
+def make_epsilon_greedy_policy(estimator, epsilon, nA):
+    def policy_fn(observation):
+        A = np.ones(nA, dtype=float) * epsilon / nA
+        q_values = estimator.predict(observation)
+        best_action = np.argmax(q_values)
+        A[best_action] += (1.0 - epsilon)
+        return A
+    return policy_fn
+
+def make_estimator(action_count, initial_state):
+    model = Estimator(action_count, initial_state)
+    return model
 
 # Calculate the TD
 def get_temporal_difference(reward, gamma, new_q_values, old_q_value):
     temporal_difference = reward + (gamma * np.max(new_q_values)) - old_q_value
     return temporal_difference
 
-def main():
-    env = gym.make('racetrack-v0', render_mode='rgb_array')
-    # Set action space to discrete
-    env.unwrapped.configure({
-        "observation": {
-            "type": "OccupancyGrid",
-            "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
-            "features_range": {
-                "x": [-100, 100],
-                "y": [-100, 100],
-                "vx": [-20, 20],
-                "vy": [-20, 20]
-            },
-            "grid_size": [[-27.5, 27.5], [-27.5, 27.5]],
-            "grid_step": [5, 5],
-            "absolute": False,
-        },
-        "action": {
-            "type": "DiscreteAction"
-        }
-    })
-    observation, info = env.reset()
-    action_size = env.action_space.n
+def q_learning(env, estimator, num_episodes, discount_factor=1.0, epsilon=0.1):
+    """
+    Q-Learning algorithm for fff-policy TD control using Function Approximation.
+    Finds the optimal greedy policy while following an epsilon-greedy policy.
     
-    # define Qlearning hyperparams
-    discount_factor = 0.9
-    learning_rate = 0.7
-    for _ in range(1000):
-        # We need to preserve the old observation to be sure we can access the old q value
-        old_observation = observation
-        action_list = env.action_space
-        action = pick_action(observation, action_list) # agent policy that uses the observation and info  
-        observation, reward, terminated, truncated, info = env.step(action)
-        env.render()
-
-        if terminated or truncated:
-            observation, info = env.reset()
-
-    env.close()
+    Args:
+        env: OpenAI environment.
+        estimator: Action-Value function estimator
+        num_episodes: Number of episodes to run for.
+        discount_factor: Gamma discount factor.
+        epsilon: Chance the sample a random action. Float betwen 0 and 1.
+        epsilon_decay: Each episode, epsilon is decayed by this factor
     
+    Returns:
+        An EpisodeStats object with two numpy arrays for episode_lengths and episode_rewards.
+    """
+    for i_episode in range(num_episodes):
+        total_reward = 0
+        # The policy we're following
+        policy = make_epsilon_greedy_policy(
+            estimator, epsilon, env.action_space.n)
+        
+        # Reset the environment and pick the first action
+        state, _ = env.reset()
+        
+        # Only used for SARSA, not Q-Learning
+        next_action = None
+        
+        # One step in the environment
+        for t in itertools.count():
+            action_probs = policy(state)
+            action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+            
+            # Take a step
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            # TD Update
+            q_values_next = estimator.predict(next_state)
+            
+            # Q-Value TD Target to approximate
+            td_target = reward + discount_factor * np.max(q_values_next)
+            total_reward += reward
+            # Update the function approximator using our target
+            estimator.update(state, action, td_target)
+                
+            if terminated or truncated:
+                break
+            env.render()
+            state = next_state
+        print(f"total reward: {total_reward}")
+        print("Episode {} Done".format(i_episode + 1))
     
 if __name__ == '__main__':
-    main()
+    # Init environment
+    env = gym.make("racetrack-v0", render_mode="rgb_array",config=_config)
+    # Reset (start) the environment 
+    initial_state, _ = env.reset()
+    estimator = make_estimator(env.action_space.n, initial_state)
+    q_learning(env, estimator, num_episodes = 10000, discount_factor = 0.8, epsilon= 0.15)
+    # After the training we can perform optimal operations and record them
+     # The policy we're following
+    policy = make_epsilon_greedy_policy(estimator, 0, env.action_space.n)
+    while True:
+        obs, info = env.reset()
+        action_probs = policy(obs)
+        action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+        done = truncated = False
+        while not (done or truncated):
+            action, _states = estimator.predict(obs)
+            obs, reward, done, truncated, info = env.step(action)
+            env.render()
