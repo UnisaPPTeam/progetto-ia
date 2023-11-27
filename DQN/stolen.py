@@ -10,25 +10,28 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 import highway_env
 _config = { "action": {
                                          "type": "DiscreteAction",
+                                         "longitudinal": True,
+                                         "lateral": True,
                                         },
-                            "lane_centering_cost": 100,
-                            "action_reward": 1.3,
-                            'collision_reward': -10000,
-                            "show_trajectories": True,
+                            "lane_centering_cost":4,
+                            "action_reward": 3.0,
+                            "duration": 150,
+                            'collision_reward': -10,
+                            "other_vehicles": 2,
+                            "policy_frequency":13,
                                     }
 
 TRAIN = True
 
 if __name__ == '__main__':
     n_cpu = 16
-    batch_size = 20480
     env = make_vec_env("racetrack-v0", n_envs=n_cpu, env_kwargs=dict(config=_config), vec_env_cls=SubprocVecEnv)
     model = DQN('MlpPolicy', env,
-                policy_kwargs=dict(net_arch=[128, 128]),
-                learning_rate=2e-4,
-                buffer_size=300000,
-                learning_starts=1000,
-                batch_size=batch_size,
+                policy_kwargs=dict(net_arch=[256, 256]),
+                learning_rate=5e-4,
+                buffer_size=15000,
+                learning_starts=200,
+                batch_size=128,
                 gamma=0.8,
                 train_freq=1,
                 gradient_steps=1,
@@ -36,7 +39,7 @@ if __name__ == '__main__':
                 verbose=1)
     # Train the model
     if TRAIN:
-        model.learn(total_timesteps=int(3e5))
+        model.learn(total_timesteps=int(1e5))
         model.save("racetrack_ppo/model")
         del model
 
