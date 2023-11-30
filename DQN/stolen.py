@@ -8,23 +8,24 @@ from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.vec_env import SubprocVecEnv
 
 import highway_env
-_config = { "action": {
-                                         "type": "DiscreteAction",
-                                         "longitudinal": True,
-                                         "lateral": True,
-                                        },
-                            "lane_centering_cost":4,
-                            "action_reward": 3.0,
-                            "duration": 150,
-                            'collision_reward': -10,
-                            "other_vehicles": 2,
-                            "policy_frequency":13,
-                                    }
 
-TRAIN = True
+_config = {"action": {
+    "type": "DiscreteAction",
+    "longitudinal": True,
+},
+    "lane_centering_cost": 1.3,
+    "action_reward": 3.0,
+    "duration": 150,
+    "off_road_penalty": -20,
+    'collision_reward': -30,
+    "other_vehicles": 4,
+    "policy_frequency": 13,
+}
+
+TRAIN = False
 
 if __name__ == '__main__':
-    n_cpu = 16
+    n_cpu = 8
     env = make_vec_env("racetrack-v0", n_envs=n_cpu, env_kwargs=dict(config=_config), vec_env_cls=SubprocVecEnv)
     model = DQN('MlpPolicy', env,
                 policy_kwargs=dict(net_arch=[256, 256]),
@@ -39,18 +40,18 @@ if __name__ == '__main__':
                 verbose=1)
     # Train the model
     if TRAIN:
-        model.learn(total_timesteps=int(1e5))
+        model.learn(total_timesteps=150000)
         model.save("racetrack_ppo/model")
         del model
 
     # Run the algorithm
     model = DQN.load("racetrack_ppo/model", env=env)
 
-    env = gym.make("racetrack-v0", render_mode = 'rgb_array', config = _config)
+    env = gym.make("racetrack-v0", render_mode='rgb_array', config=_config)
     env = RecordVideo(env, video_folder="racetrack_ppo/videos", episode_trigger=lambda e: True)
     env.unwrapped.set_record_video_wrapper(env)
 
-    for video in range(3):
+    for video in range(5):
         done = truncated = False
         obs, info = env.reset()
         while not (done or truncated):
