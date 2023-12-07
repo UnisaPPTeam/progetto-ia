@@ -19,6 +19,7 @@ gym.register(
 _config = {"action": {
     "type": "DiscreteAction",
     "longitudinal": True,
+    
 
 },
     "lane_centering_cost": 1.3,
@@ -27,7 +28,7 @@ _config = {"action": {
     "off_road_penalty": -20,
     'collision_reward': -30,
     "other_vehicles": 9,
-    "policy_frequency": 13,
+    "policy_frequency": 9,
 }
 
 TRAIN = True

@@ -1,9 +1,7 @@
 from typing import Dict, Text
 
-import gymnasium
-import highway_env.envs.common.action
 import numpy as np
-import itertools
+
 from highway_env import utils
 from highway_env.envs.common.abstract import AbstractEnv
 from highway_env.road.lane import CircularLane, LineType, StraightLane
@@ -55,21 +53,11 @@ class RacetrackEnvBello(AbstractEnv):
                 "screen_width": 600,
                 "screen_height": 600,
                 "centering_position": [0.5, 0.5],
-                "distance_from_front_penalty": -1
+                "distance_from_front_penalty": -1,
+                "speed_reward_multiplier": 3
             }
         )
         return config
-
-    def _reward(self, action: np.ndarray) -> float:
-        rewards = self._rewards(action)
-        reward = sum(
-            self.config.get(name, 0) * reward for name, reward in rewards.items()
-        )
-        reward = utils.lmap(reward, [self.config["collision_reward"], 1], [0, 1])
-        reward *= rewards["on_road_reward"]
-        reward += rewards["off_road_penalty"]
-        reward += rewards["distance_from_front_penalty"]
-        return reward
 
     def distance_from_front(self) -> float:
         ego_vehicle = self.controlled_vehicles[0]
@@ -80,46 +68,55 @@ class RacetrackEnvBello(AbstractEnv):
             return None
         return ego_vehicle.lane_distance_to(front_vehicle)
 
-    def _rewards(self, action: np.ndarray) -> Dict[Text, float]:
-        action = self.all_actions[action]
-        ego_vehicle = self.controlled_vehicles[0]
-        _, lateral = self.vehicle.lane.local_coordinates(ego_vehicle.position)
+    def _reward(self, action: np.ndarray) -> float:
+        rewards = self._rewards(action)
+        reward = sum(
+            self.config.get(name, 0) * reward for name, reward in rewards.items()
+        )
+        reward = utils.lmap(reward, [self.config["collision_reward"], 1], [0, 1])
+        reward *= rewards["on_road_reward"]
+        reward += rewards["off_road_penalty"]
+        reward += rewards["distance_from_front_penalty"]
+        #reward += rewards["velocity_reward"]
+        return reward
 
+    def _rewards(self, action: np.ndarray) -> Dict[Text, float]:
+        #ego_vehicle = self.controlled_vehicles[0]
+        _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
         off_road_penalty = 0
         if not self.vehicle.on_road:
             off_road_penalty = self.config["off_road_penalty"]
-        distance_from_front = self.distance_from_front()
-        if distance_from_front is None or distance_from_front > 15:
+        distance_from_front=self.distance_from_front()
+        if distance_from_front is None or distance_from_front >15:
             distance_from_front_penalty = 0
         else:
-            distance_from_front_penalty = 15 - distance_from_front
+            distance_from_front_penalty=15-distance_from_front
 
+        #forward_speed = ego_vehicle.speed
+        #scaled_speed = utils.lmap(
+        #    forward_speed, [ego_vehicle.MIN_SPEED, ego_vehicle.MAX_SPEED], [-1, 1]
+        #)
         return {
             "lane_centering_reward": 3 / (1 + self.config["lane_centering_cost"] * lateral ** 2),
             "action_reward": np.linalg.norm(action),
             "collision_reward": self.vehicle.crashed,
             "on_road_reward": self.vehicle.on_road,
             "off_road_penalty": off_road_penalty,
-            "distance_from_front_penalty": (distance_from_front_penalty * self.config["distance_from_front_penalty"])
+            #"velocity_reward": - scaled_speed * self.config["speed_reward_multiplier"],
+            "distance_from_front_penalty": (distance_from_front_penalty*self.config["distance_from_front_penalty"])
         }
 
+
+
+
+
     def _is_terminated(self) -> bool:
-        return self.vehicle.crashed or not self.vehicle.on_road
+        return self.vehicle.crashed
 
     def _is_truncated(self) -> bool:
         return self.time >= self.config["duration"]
 
-    class X:
-        def __getitem__(self, item):
-            return item
-
     def _reset(self) -> None:
-        if isinstance(self.action_type, highway_env.envs.common.action.DiscreteAction):
-            axes = np.linspace([-1, -1], [1, 1], self.action_type.actions_per_axis).T
-            self.all_actions = list(itertools.product(*axes))
-        else:
-            self.all_actions = RacetrackEnvBello.X()
-
         self._make_road()
         self._make_vehicles()
 
@@ -445,8 +442,3 @@ class RacetrackEnvBello(AbstractEnv):
                     break
             else:
                 self.road.vehicles.append(vehicle)
-
-
-
-
-
