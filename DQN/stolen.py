@@ -19,17 +19,18 @@ gym.register(
 _config = {"action": {
     "type": "DiscreteAction",
     "longitudinal": True,
+
 },
     "lane_centering_cost": 1.3,
     "action_reward": 3.0,
     "duration": 150,
     "off_road_penalty": -20,
     'collision_reward': -30,
-    "other_vehicles": 4,
+    "other_vehicles": 9,
     "policy_frequency": 13,
 }
 
-TRAIN = False
+TRAIN = True
 
 if __name__ == '__main__':
     n_cpu = 8
@@ -48,14 +49,14 @@ if __name__ == '__main__':
     # Train the model
     if TRAIN:
         model.learn(total_timesteps=150000)
-        model.save("racetrack_ppo/model")
+        model.save("racetrack_DQN/model")
         del model
 
     # Run the algorithm
-    model = DQN.load("racetrack_ppo/model", env=env)
+    model = DQN.load("racetrack_DQN/model", env=env)
 
     env = gym.make("custom-highway-v1", render_mode='rgb_array', config=_config)
-    env = RecordVideo(env, video_folder="racetrack_ppo/videos", episode_trigger=lambda e: True)
+    env = RecordVideo(env, video_folder="racetrack_DQN/videos", episode_trigger=lambda e: True)
     env.unwrapped.set_record_video_wrapper(env)
 
     for video in range(5):
