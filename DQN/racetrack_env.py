@@ -77,38 +77,34 @@ class RacetrackEnvBello(AbstractEnv):
         reward *= rewards["on_road_reward"]
         reward += rewards["off_road_penalty"]
         reward += rewards["distance_from_front_penalty"]
-        #reward += rewards["velocity_reward"]
+        # reward += rewards["velocity_reward"]
         return reward
 
     def _rewards(self, action: np.ndarray) -> Dict[Text, float]:
-        #ego_vehicle = self.controlled_vehicles[0]
+        # ego_vehicle = self.controlled_vehicles[0]
         _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
         off_road_penalty = 0
         if not self.vehicle.on_road:
             off_road_penalty = self.config["off_road_penalty"]
-        distance_from_front=self.distance_from_front()
-        if distance_from_front is None or distance_from_front >15:
+        distance_from_front = self.distance_from_front()
+        if distance_from_front is None or distance_from_front > 15:
             distance_from_front_penalty = 0
         else:
-            distance_from_front_penalty=15-distance_from_front
+            distance_from_front_penalty = 15 - distance_from_front
 
-        #forward_speed = ego_vehicle.speed
-        #scaled_speed = utils.lmap(
+        # forward_speed = ego_vehicle.speed
+        # scaled_speed = utils.lmap(
         #    forward_speed, [ego_vehicle.MIN_SPEED, ego_vehicle.MAX_SPEED], [-1, 1]
-        #)
+        # )
         return {
             "lane_centering_reward": 3 / (1 + self.config["lane_centering_cost"] * lateral ** 2),
             "action_reward": np.linalg.norm(action),
             "collision_reward": self.vehicle.crashed,
             "on_road_reward": self.vehicle.on_road,
             "off_road_penalty": off_road_penalty,
-            #"velocity_reward": - scaled_speed * self.config["speed_reward_multiplier"],
-            "distance_from_front_penalty": (distance_from_front_penalty*self.config["distance_from_front_penalty"])
+            # "velocity_reward": - scaled_speed * self.config["speed_reward_multiplier"],
+            "distance_from_front_penalty": (distance_from_front_penalty * self.config["distance_from_front_penalty"])
         }
-
-
-
-
 
     def _is_terminated(self) -> bool:
         return self.vehicle.crashed

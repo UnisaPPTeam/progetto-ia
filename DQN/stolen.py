@@ -27,11 +27,11 @@ _config = {"action": {
     "duration": 150,
     "off_road_penalty": -20,
     'collision_reward': -30,
-    "other_vehicles": 9,
+    "other_vehicles": 1,
     "policy_frequency": 9,
 }
 
-TRAIN = True
+TRAIN = False
 
 if __name__ == '__main__':
     n_cpu = 8
