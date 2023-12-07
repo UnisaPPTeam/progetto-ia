@@ -6,8 +6,15 @@ from stable_baselines3 import DQN, DDPG, PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.vec_env import SubprocVecEnv
-
+import racetrack_env
 import highway_env
+
+
+gym.register(
+    id='custom-highway-v1',
+    entry_point='racetrack_env:RacetrackEnvBello',
+)
+
 
 _config = {"action": {
     "type": "DiscreteAction",
@@ -26,7 +33,7 @@ TRAIN = False
 
 if __name__ == '__main__':
     n_cpu = 8
-    env = make_vec_env("racetrack-v0", n_envs=n_cpu, env_kwargs=dict(config=_config), vec_env_cls=SubprocVecEnv)
+    env = make_vec_env("custom-highway-v1", n_envs=n_cpu, env_kwargs=dict(config=_config), vec_env_cls=SubprocVecEnv)
     model = DQN('MlpPolicy', env,
                 policy_kwargs=dict(net_arch=[256, 256]),
                 learning_rate=5e-4,
@@ -47,7 +54,7 @@ if __name__ == '__main__':
     # Run the algorithm
     model = DQN.load("racetrack_ppo/model", env=env)
 
-    env = gym.make("racetrack-v0", render_mode='rgb_array', config=_config)
+    env = gym.make("custom-highway-v1", render_mode='rgb_array', config=_config)
     env = RecordVideo(env, video_folder="racetrack_ppo/videos", episode_trigger=lambda e: True)
     env.unwrapped.set_record_video_wrapper(env)
 
