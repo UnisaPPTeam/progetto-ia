@@ -2,7 +2,7 @@ Descrizione
 Questo repository contiene implementazioni e sperimentazioni di algoritmi di apprendimento automatico. In particolare, sono presenti tre cartelle principali: q-learning, SGD, e DQL.
 
 q-learning
-Questa cartella contiene implementazioni e esperimenti relativi all'algoritmo di apprendimento Q-learning. Gli esperimenti condotti in questa sezione non aver raggiunto i risultati attesi, per problemi dovuti alla complessità delle osservazioni.
+Questa cartella contiene implementazioni e esperimenti relativi all'algoritmo di apprendimento Q-learning. Gli esperimenti condotti in questa sezione non hanno raggiunto i risultati attesi, per problemi dovuti alla complessità delle osservazioni.
 
 SGD
 Nella cartella SGD sono presenti esperimenti che coinvolgono l'ottimizzazione stocastica del gradiente (SGD). Tuttavia, questi esperimenti non hanno prodotto i risultati desiderati.
