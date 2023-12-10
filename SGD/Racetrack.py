@@ -100,7 +100,7 @@ if __name__ == '__main__':
     # Reset (start) the environment 
     initial_state, _ = env.reset()
     estimator = make_estimator(env.action_space.n, initial_state)
-    # q_learning(env, estimator, num_episodes=10000, discount_factor=0.8, epsilon=0.15)
+    q_learning(env, estimator, num_episodes=10000, discount_factor=0.8, epsilon=0.15)
     # After the training we can perform optimal operations and record them
     # The policy we're following
     policy = make_epsilon_greedy_policy(estimator, 0, env.action_space.n)
