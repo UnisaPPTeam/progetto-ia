@@ -31,7 +31,7 @@ _config = {"action": {
     "policy_frequency": 9,
 }
 
-TRAIN = False
+TRAIN = True
 
 if __name__ == '__main__':
     n_cpu = 8
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                 verbose=1)
     # Train the model
     if TRAIN:
-        model.learn(total_timesteps=150000)
+        model.learn(total_timesteps=150)
         model.save("racetrack_DQN/model")
         del model
 

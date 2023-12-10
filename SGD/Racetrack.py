@@ -56,9 +56,6 @@ def q_learning(env, estimator, num_episodes, discount_factor=1.0, epsilon=0.1):
         # Reset the environment and pick the first action
         state, _ = env.reset()
         
-        # Only used for SARSA, not Q-Learning
-        next_action = None
-        
         # One step in the environment
         for t in itertools.count():
             action_probs = policy(state)
