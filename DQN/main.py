@@ -16,8 +16,6 @@ gym.register(
 _config = {"action": {
     "type": "DiscreteAction",
     "longitudinal": True,
-    
-
 },
     "lane_centering_cost": 1.3,
     "action_reward": 3.0,
