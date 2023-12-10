@@ -1,10 +1,7 @@
-from logging import config
-import numpy as np
 import gymnasium as gym
 from gymnasium.wrappers import RecordVideo
-from stable_baselines3 import DQN, DDPG, PPO
+from stable_baselines3 import DQN
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.vec_env import SubprocVecEnv
 import racetrack_env
 import highway_env
