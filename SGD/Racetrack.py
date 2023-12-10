@@ -46,21 +46,6 @@ def get_temporal_difference(reward, gamma, new_q_values, old_q_value):
 
 
 def q_learning(env, estimator, num_episodes, discount_factor=1.0, epsilon=0.1):
-    """
-    Q-Learning algorithm for fff-policy TD control using Function Approximation.
-    Finds the optimal greedy policy while following an epsilon-greedy policy.
-    
-    Args:
-        env: OpenAI environment.
-        estimator: Action-Value function estimator
-        num_episodes: Number of episodes to run for.
-        discount_factor: Gamma discount factor.
-        epsilon: Chance the sample a random action. Float betwen 0 and 1.
-        epsilon_decay: Each episode, epsilon is decayed by this factor
-    
-    Returns:
-        An EpisodeStats object with two numpy arrays for episode_lengths and episode_rewards.
-    """
     for i_episode in range(num_episodes):
         total_reward = 0
         # The policy we're following
@@ -100,7 +85,7 @@ if __name__ == '__main__':
     # Reset (start) the environment 
     initial_state, _ = env.reset()
     estimator = make_estimator(env.action_space.n, initial_state)
-    q_learning(env, estimator, num_episodes=10000, discount_factor=0.8, epsilon=0.15)
+    q_learning(env, estimator, num_episodes=1250, discount_factor=0.8, epsilon=0.05)
     # After the training we can perform optimal operations and record them
     # The policy we're following
     policy = make_epsilon_greedy_policy(estimator, 0, env.action_space.n)
