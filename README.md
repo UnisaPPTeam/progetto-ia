@@ -1,8 +1,8 @@
-# AutoNav: Apprendimento con Rinforzo per la Navigazione Stradale
+# Apprendimento con Rinforzo per la Navigazione Stradale
 
 ## Descrizione del Progetto
 
-Il progetto AutoNav nasce dalla necessità di sviluppare un agente capace di apprendere e migliorare le sue azioni attraverso il reinforcement learning. L'attenzione è stata focalizzata su un ambiente, simile a una strada, dove l'agente deve navigare mantenendosi nella corsia e adottare azioni ottimali per una guida sicura ed efficiente.
+Il progetto nasce dalla necessità di sviluppare un agente capace di apprendere e migliorare le sue azioni attraverso il reinforcement learning. L'attenzione è stata focalizzata su un ambiente, simile a una strada, dove l'agente deve navigare mantenendosi nella corsia e adottare azioni ottimali per una guida sicura ed efficiente.
 
 ## Problema Specifico
 
